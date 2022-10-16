@@ -1,0 +1,50 @@
+tadawul:
+    url: https://www.saudiexchange.sa/wps/portal/tadawul/market-participants/issuers/issuers-directory/company-details/!ut/p/z1
+    financial_indicators_url: https://www.saudiexchange.sa/Resources/Reports/DailyFinancialIndicators_en.html
+    session_key: '04_Sj9CPykssy0xPLMnMz0vMAfIjo8zi_Tx8nD0MLIy83V1DjA0czVx8nYP8PI0MDAz0I4EKzBEKDEJDLYEKjJ0DA11MjQzcTfXDCSkoyE7zBAC-SKhH'
+    stocks: 
+      - 7010
+      - 3030
+      - 3040
+      - 3060
+      - 1120
+      - 1150
+      - 1831
+      - 4013
+      - 4002
+      - 4335
+      - 4337
+      - 4330
+      - 4336
+      - 4348
+      - 2222
+      - 5110
+      - 2330
+      - 2010
+      - 4150
+      - 2280
+      - 4190
+finbox:
+  url: https://finbox.com/_/api
+  asset_benchmark_query: 'query loadAssetPeerBenchmarks ($ticker: String!, $currency: String) {            asset: company (ticker: $ticker, currency: $currency) {              ticker              is_subscribed              stats            }          }      '
+  fair_value_query: 'query loadAssetFairValue ($ticker: String!, $currency: String) {            asset: company (ticker: $ticker, currency: $currency) {              short_name              full_ticker              exchange              region              region_id              is_subscribed              trading_currency              fair_value {                market                analyst_target                ranges                averages                uncertainty                models              }            }          }'
+  cookies: 
+    finboxio-production:jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo3NDkyMzIsInZpc2l0b3JfaWQiOiJ2LWNuN3lxMWNzMmd2IiwiZmlyc3Rfc2VlbiI6IjIwMjItMTAtMDlUMDI6MDg6MTIuNTc2WiIsImNhcHRjaGFfdmVyaWZpZWQiOmZhbHNlLCJtdXN0X3JldmVyaWZ5IjpmYWxzZSwicHJldmlld19hY2Nlc3MiOnsiYXNzZXRzX3ZpZXdlZCI6WyJOQVNEQVFHUzpBQVBMIiwiU0FTRTo3MDEwIl0sImFzc2V0c19tYXgiOjUsInZhbGlkX3VudGlsIjoiMjAyMi0xMC0xMFQwMjowOTowOS4wMDBaIn0sInJvbGVzIjpbInVzZXIiXSwiYm9vc3RzIjpbXSwicmVnaW9ucyI6W10sInNjb3BlcyI6WyJyb2xlOnVzZXIiXSwiZm9yIjoiMTg4LjQ5Ljg2LjQ3IiwiZXhwIjoxNjY1NTI2ODc2LCJpYXQiOjE2NjU1MjY1NzZ9.qtWq9ay-IMYGYN2mLG220mK3AOTj7XtRTBCwKbSKqRM'
+    finboxio-production:jwt.sig: 'cvW9xEmZ6071JNiIKRs5RlmPRzM'
+    finboxio-production:refresh: '6c2a5084-4cd4-4b31-a047-3d25581a4099'
+    finboxio-production:refresh.sig: 'A-CIG4Lsmg1Kki2rgwZS0VNVcdg'
+storage:
+  keep_last_files_count: 10
+  folder_name: stocks_data
+portfolio:
+  folder_name: portfolio_sheet
+  file_name: PortfolioStatement.csv
+excel:
+  folder_name: analysis
+  stocks_analysis_file_name: stocks_analysis
+  market_analysis_file_name: market_analysis
+  stocks_analysis_sheet_name: stocks_analysis
+  market_analysis_sheet_name: market_analysis
+  stocks_table_name: StocksTable
+  stocks_table_start_row: 5
+  market_table_start_row: 7
