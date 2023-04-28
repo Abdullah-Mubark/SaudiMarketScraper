@@ -70,12 +70,3 @@ if __name__ == "__main__":
     excel_manager.create_stocks_analysis(stock_data)
     excel_manager.create_market_analysis(financial_indicators=stock_scraper.scrape_financial_indicators())
 
-
-
-
-
-
-
-
-
-

@@ -164,41 +164,40 @@ class StockScraper:
 
     def __extract_stock_name(self, data: bs4.BeautifulSoup, stock_code: int) -> str:
         try:
-            return data.find('p', {'class': 'trade_name'}).find('strong').text.strip()
+            return data.find('div', {'class': 'price_name'}).find('div', {'class': 'name'}).text.strip()
         except Exception as e:
             logging.exception(f'Failed to extract stock name for stock [{stock_code}]. Error: {e}')
             return self.unkown_stock_name
 
     def __extract_stock_sector(self, data: bs4.BeautifulSoup, stock_code: int) -> str:
         try:
-            return data.find_all('p', {'class': 'trade_name'})[1].find('strong').text.strip()
+            return data.find('div', {'class': 'market_capital'}).find_all('li')[1].text.strip()
         except Exception as e:
             logging.exception(f'Failed to extract stock sector for stock [{stock_code}]. Error: {e}')
             return None
 
     def __extract_stock_industry_group(self, data: bs4.BeautifulSoup, stock_code: int) -> str:
         try:
-            return data.find_all('p', {'class': 'trade_name'})[1].find('a').text.strip()
+            return data.find('div', {'class': 'market_capital'}).find_all('li')[1].text.strip()
         except Exception as e:
             logging.exception(f'Failed to extract industry group for stock [{stock_code}]. Error: {e}')
             return None
 
     def __extract_stock_price(self, data: bs4.BeautifulSoup, stock_code: int) -> float:
         try:
-            return float(data.find('div', {'id': 'chart_tab1'})
-                            .find('div' , {'class': 'table_sep'})
-                            .find('div')
-                            .find('dd')
-                            .text.strip())
+            return float(data.find('div', {'class': 'table_updates'})
+                             .find('div', {'class': 'main_trade_box'})
+                             .find('div', {'class': 'price'})
+                             .text.strip())
         except Exception as e:
             logging.exception(f'Failed to extract stock price for stock [{stock_code}]. Error: {e}')
             return -1
 
     def __extract_52_week_prices(self, data: bs4.BeautifulSoup, stock_code: int) -> tuple[float, float]:
         try:
-            stock_52_week = data.find('p', text='52 WEEK').find_next_sibling('table').find('tbody').find('tr').find_all('td')
-            stock_52_week_min = float(stock_52_week[1].next.text.strip())
-            stock_52_week_max = float(stock_52_week[0].next.text.strip())
+            stock_52_week = data.find('div', {'class': 'table_updates'}).find('div', {'class': 'week_52'})
+            stock_52_week_min = float(stock_52_week.find('div', {'class': 'week_col low'}).find('div', {'class': 'price'}).text.strip())
+            stock_52_week_max = float(stock_52_week.find('div', {'class': 'week_col high'}).find('div', {'class': 'price'}).text.strip())
 
             return stock_52_week_max, stock_52_week_min
         except Exception as e:
