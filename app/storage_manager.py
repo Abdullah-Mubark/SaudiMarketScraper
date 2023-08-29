@@ -1,12 +1,13 @@
-import os
-import logging
 import json
+import logging
+import os
 from datetime import datetime, timedelta
 from functools import lru_cache
 
 from dacite import from_dict, Config as DaciteConfig
 
-from config import config, Stock, StockData
+from config import config, StockData
+
 
 class StorageManager:
 
@@ -15,10 +16,10 @@ class StorageManager:
         self.__create_folder_if_not_exists()
 
         self.__existing_files, self.__latest_file = self.__get_existing_files()
-        self.__files_to_keep = list(map(lambda date : date.strftime('%Y-%m-%d') + '.json', self.__get_last_n_days(config.storage.keep_last_files_count))) 
+        self.__files_to_keep = list(map(lambda date: date.strftime('%Y-%m-%d') + '.json',
+                                        self.__get_last_n_days(config.storage.keep_last_files_count)))
         self.__remove_old_files()
 
-    
     def store_stock_date(self, stock_data: StockData) -> StockData:
         file_name = stock_data.date.strftime('%Y-%m-%d') + '.json'
         with open(os.path.join(self.__folder_name, file_name), 'w') as f:
@@ -32,7 +33,7 @@ class StorageManager:
         file_name = date.strftime('%Y-%m-%d') + '.json'
         return self.__get_stock_date_from_file(file_name)
 
-    def __get_stock_date_from_file(self, file_name) -> StockData:
+    def __get_stock_date_from_file(self, file_name) -> StockData | None:
         try:
             file = open(os.path.join(self.__folder_name, file_name), 'r')
             data = json.load(file)
@@ -50,7 +51,8 @@ class StorageManager:
             logging.info(f'Created folder {self.__folder_name}')
 
     def __get_existing_files(self) -> tuple[list[str], str]:
-        files = list(filter(lambda file: file.endswith('.json') and len(file.split('-')) == 3, os.listdir(self.__folder_name)))
+        files = list(
+            filter(lambda file: file.endswith('.json') and len(file.split('-')) == 3, os.listdir(self.__folder_name)))
         files.sort(reverse=True)
         return files, files[0] if len(files) > 0 else None
 

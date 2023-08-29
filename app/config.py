@@ -12,8 +12,9 @@ from dacite import from_dict
 class Tadawul:
     url: str
     financial_indicators_url: str
-    session_key : str
+    session_key: str
     stocks: list[int]
+
 
 @dataclass
 class Finbox:
@@ -22,15 +23,18 @@ class Finbox:
     asset_benchmark_query: str
     cookies: dict
 
+
 @dataclass
 class Storage:
     keep_last_files_count: int
     folder_name: str
 
+
 @dataclass
 class Portfolio:
     folder_name: str
     file_name: str
+
 
 @dataclass
 class Excel:
@@ -50,7 +54,7 @@ class Config:
     def from_yaml(cls, file_path: str):
         with open(file_path, 'r') as f:
             config_dict = yaml.safe_load(f)
-        
+
         return from_dict(data_class=cls, data=config_dict)
 
     tadawul: Tadawul
@@ -58,15 +62,15 @@ class Config:
     storage: Storage
     portfolio: Portfolio
     excel: Excel
-    
+
 
 @dataclass
 class Dividend:
-    anouncement_date: datetime
+    announcement_date: datetime
     due_date: datetime
     distribution_date: datetime
     distribution_way: str
-    amount : float
+    amount: float
 
 
 @dataclass
@@ -75,10 +79,12 @@ class Benchmark:
     p_e: float = None
     p_b: float = None
 
+
 @dataclass
 class FairValue:
     average: float
-    uncertinty: str
+    uncertainty: str
+
 
 @dataclass
 class Stock:
@@ -97,21 +103,23 @@ class Stock:
     earnings_per_share: float = None
     book_value_per_share: float = None
     quantity_owned: int = None
-    cost_price : float = None
-    dividends : list[Dividend] = None
+    cost_price: float = None
+    dividends: list[Dividend] = None
     benchmark: Benchmark = None
     fair_value: FairValue = None
     scraped_at: datetime = None
     success_scraping: bool = None
 
+
 @dataclass
 class StockData:
-    all_success: bool 
+    all_success: bool
     date: date
     stocks: list[Stock]
 
     def to_json(self):
         return json.dumps(dataclasses.asdict(self), indent=4, default=str)
+
 
 @dataclass
 class FinancialIndicators:
@@ -119,5 +127,6 @@ class FinancialIndicators:
     stocks: list[Stock]
     industry_groups: list[str]
     headers: list[str]
+
 
 config = Config.from_yaml(file_path=os.path.join(os.path.dirname(__file__), 'config.yaml'))

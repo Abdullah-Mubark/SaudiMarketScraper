@@ -1,16 +1,17 @@
-import os
 import logging
+import os
 from datetime import datetime, date
 from enum import Enum
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font
 from openpyxl.formatting.rule import ColorScaleRule
+from openpyxl.styles import Alignment, Font
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-from config import config, Stock, StockData, FinancialIndicators
 from analytics import Analytics
+from config import config, Stock, StockData, FinancialIndicators
 from scraper import FinancialIndicatorsColumnsIndex
+
 
 class StocksTableColumns(Enum):
     SECTOR = 'Sector'
@@ -53,7 +54,7 @@ class ExcelManager:
             file_date = stock_data.date.strftime('%Y-%m-%d')
         else:
             file_date = stock_data.date
-        
+
         file_name = f'{self.stocks_analysis_file_name}_{file_date}.xlsx'
 
         wb = Workbook()
@@ -62,17 +63,16 @@ class ExcelManager:
 
         self.__create_sheet_date(ws, stock_data.date)
         self.__create_stocks_table(ws, stock_data)
-        
+
         wb.save(f'{self.folder_name}/{file_name}')
         logging.info(f'Stocks analysis excel file created: {self.folder_name}/{file_name}')
-
 
     def create_market_analysis(self, financial_indicators: FinancialIndicators) -> None:
         if isinstance(financial_indicators.date, date):
             file_date = financial_indicators.date.strftime('%Y-%m-%d')
         else:
             file_date = financial_indicators.date
-        
+
         file_name = f'{self.market_analysis_file_name}_{file_date}.xlsx'
 
         wb = Workbook()
@@ -81,7 +81,7 @@ class ExcelManager:
 
         self.__create_sheet_date(ws, financial_indicators.date)
         self.__create_market_tables(ws, financial_indicators)
-        
+
         wb.save(f'{self.folder_name}/{file_name}')
         logging.info(f'Market analysis excel file created: {self.folder_name}/{file_name}')
 
@@ -93,18 +93,17 @@ class ExcelManager:
         year = datetime.now().year
         return [str(year), str(year - 1), str(year - 2)]
 
-
     def __create_sheet_date(self, ws, date: date) -> None:
         ws['A1'] = 'Date'
         ws['B1'] = date
 
-        ws['A1'].font = ws['B1'].font = Font(size=12, bold=True) 
+        ws['A1'].font = ws['B1'].font = Font(size=12, bold=True)
 
         ws['A1'].style = 'Headline 1'
         ws['B1'].style = 'Headline 2'
-        
+
         ws['A1'].alignment = ws['B1'].alignment = Alignment(horizontal='center', vertical='center')
-        
+
         ws['B1'].number_format = 'dd/mm/yyyy'
 
     def __create_stocks_table(self, ws, stock_data: StockData) -> None:
@@ -121,8 +120,10 @@ class ExcelManager:
             ws[cell_name].style = 'Headline 1'
             ws[cell_name].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
-        dividend_cell_for_last_year = self.__get_cell_name_stock_table(self.last_three_years[0], self.stocks_table_start_row - 1)
-        dividend_cell_for_three_years_ago = self.__get_cell_name_stock_table(self.last_three_years[2], self.stocks_table_start_row - 1)
+        dividend_cell_for_last_year = self.__get_cell_name_stock_table(self.last_three_years[0],
+                                                                       self.stocks_table_start_row - 1)
+        dividend_cell_for_three_years_ago = self.__get_cell_name_stock_table(self.last_three_years[2],
+                                                                             self.stocks_table_start_row - 1)
         ws.merge_cells(f'{dividend_cell_for_last_year}:{dividend_cell_for_three_years_ago}')
         ws[dividend_cell_for_last_year].value = 'Dividends'
         ws[dividend_cell_for_last_year].font = Font(size=15, bold=True)
@@ -135,12 +136,12 @@ class ExcelManager:
             self.__create_stock_row(ws, stock, protfolio_total_value, row_index)
 
         table_start_cell = self.__get_cell_name_stock_table(self.stocks_table_cols[0], self.stocks_table_start_row)
-        table_end_cell = self.__get_cell_name_stock_table(self.stocks_table_cols[-1], self.stocks_table_start_row + len(stock_data.stocks) + 1)
+        table_end_cell = self.__get_cell_name_stock_table(self.stocks_table_cols[-1],
+                                                          self.stocks_table_start_row + len(stock_data.stocks) + 1)
         table = Table(displayName=self.stocks_table_name, ref=f"{table_start_cell}:{table_end_cell}")
-        table.tableStyleInfo = TableStyleInfo(name='TableStyleLight20', showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+        table.tableStyleInfo = TableStyleInfo(name='TableStyleLight20', showFirstColumn=False, showLastColumn=False,
+                                              showRowStripes=True, showColumnStripes=False)
         ws.add_table(table)
-
-
 
     def __create_stock_row(self, ws, stock: Stock, protfolio_total_value: float, row_index: int) -> None:
         sector_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.SECTOR.value, row_index)
@@ -148,21 +149,27 @@ class ExcelManager:
         stock_name_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.STOCK_NAME.value, row_index)
         price_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.PRICE.value, row_index)
         cost_price_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.COST_PRICE.value, row_index)
-        percentage_change_from_cost_price_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.PERCENTAGE_CHANGE_FROM_COST_PRICE.value, row_index)
-        price_earnings_ratio_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.PRICE_EARNINGS_RATIO.value, row_index)
+        percentage_change_from_cost_price_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.PERCENTAGE_CHANGE_FROM_COST_PRICE.value, row_index)
+        price_earnings_ratio_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.PRICE_EARNINGS_RATIO.value,
+                                                                          row_index)
         dividend_yield_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.DIVIDEND_YIELD.value, row_index)
-        percentage_of_portfolio_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.PERCENTAGE_OF_PORTFOLIO.value, row_index)
+        percentage_of_portfolio_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.PERCENTAGE_OF_PORTFOLIO.value, row_index)
         _52_week_high_cell_name = self.__get_cell_name_stock_table(StocksTableColumns._52_WEEK_HIGH.value, row_index)
-        difference_from_52_week_high_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.DIIFERENCE_FROM_52_WEEK_HIGH.value, row_index)
+        difference_from_52_week_high_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.DIIFERENCE_FROM_52_WEEK_HIGH.value, row_index)
         _52_week_low_cell_name = self.__get_cell_name_stock_table(StocksTableColumns._52_WEEK_LOW.value, row_index)
-        difference_from_52_week_low_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.DIIFERENCE_FROM_52_WEEK_LOW.value, row_index)
+        difference_from_52_week_low_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.DIIFERENCE_FROM_52_WEEK_LOW.value, row_index)
         fair_value_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.FAIR_VALUE.value, row_index)
-        difference_from_from_fair_value_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.DIFFERENCE_FROM_FAIR_VALUE.value, row_index)
-        fair_value_uncertainty_cell_name = self.__get_cell_name_stock_table(StocksTableColumns.FAIR_VALUE_UNCERTAINTY.value, row_index)
+        difference_from_from_fair_value_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.DIFFERENCE_FROM_FAIR_VALUE.value, row_index)
+        fair_value_uncertainty_cell_name = self.__get_cell_name_stock_table(
+            StocksTableColumns.FAIR_VALUE_UNCERTAINTY.value, row_index)
         last_year_dividend_cell_name = self.__get_cell_name_stock_table(self.last_three_years[0], row_index)
         two_years_ago_dividend_cell_name = self.__get_cell_name_stock_table(self.last_three_years[1], row_index)
         three_years_ago_dividend_cell_name = self.__get_cell_name_stock_table(self.last_three_years[2], row_index)
-        
 
         ws[sector_cell_name] = '' if stock.sector is None else stock.sector
         ws[stock_code_cell_name] = '' if stock.code is None else stock.code
@@ -170,48 +177,72 @@ class ExcelManager:
 
         ws[price_cell_name] = '' if stock.price is None else stock.price
         ws[cost_price_cell_name] = '' if stock.cost_price is None else stock.cost_price
-        ws[percentage_change_from_cost_price_cell_name].value = f'=({price_cell_name}-{cost_price_cell_name})/{cost_price_cell_name}'
-        ws[percentage_of_portfolio_cell_name] = '' if stock.price is None or stock.quantity_owned is None else (stock.price * stock.quantity_owned) / protfolio_total_value
+        ws[
+            percentage_change_from_cost_price_cell_name].value = f'=({price_cell_name}-{cost_price_cell_name})/{cost_price_cell_name}'
+        ws[percentage_of_portfolio_cell_name] = '' if stock.price is None or stock.quantity_owned is None else (
+                                                                                                                       stock.price * stock.quantity_owned) / protfolio_total_value
 
         ws[_52_week_high_cell_name] = '' if stock._52_week_high is None else stock._52_week_high
-        ws[difference_from_52_week_high_cell_name].value = f'=({price_cell_name}-{_52_week_high_cell_name})/{_52_week_high_cell_name}'
+        ws[
+            difference_from_52_week_high_cell_name].value = f'=({price_cell_name}-{_52_week_high_cell_name})/{_52_week_high_cell_name}'
         ws[_52_week_low_cell_name] = '' if stock._52_week_low is None else stock._52_week_low
-        ws[difference_from_52_week_low_cell_name].value = f'=({price_cell_name}-{_52_week_low_cell_name})/{_52_week_low_cell_name}'
+        ws[
+            difference_from_52_week_low_cell_name].value = f'=({price_cell_name}-{_52_week_low_cell_name})/{_52_week_low_cell_name}'
 
-        ws[price_earnings_ratio_cell_name] = '' if stock.benchmark is None or stock.benchmark.p_e is None else stock.benchmark.p_e
-        ws[dividend_yield_cell_name] = '' if stock.benchmark is None or stock.benchmark.div_yield is None else stock.benchmark.div_yield
+        ws[
+            price_earnings_ratio_cell_name] = '' if stock.benchmark is None or stock.benchmark.p_e is None else stock.benchmark.p_e
+        ws[
+            dividend_yield_cell_name] = '' if stock.benchmark is None or stock.benchmark.div_yield is None else stock.benchmark.div_yield
 
-        ws[fair_value_cell_name] = '' if stock.fair_value is None or stock.fair_value.average is None else stock.fair_value.average
-        ws[difference_from_from_fair_value_cell_name].value = f'=({price_cell_name}-{fair_value_cell_name})/{fair_value_cell_name}'
-        ws[fair_value_uncertainty_cell_name] = '' if stock.fair_value is None or stock.fair_value.uncertinty is None else stock.fair_value.uncertinty
+        ws[
+            fair_value_cell_name] = '' if stock.fair_value is None or stock.fair_value.average is None else stock.fair_value.average
+        ws[
+            difference_from_from_fair_value_cell_name].value = f'=({price_cell_name}-{fair_value_cell_name})/{fair_value_cell_name}'
+        ws[
+            fair_value_uncertainty_cell_name] = '' if stock.fair_value is None or stock.fair_value.uncertainty is None else stock.fair_value.uncertainty
 
-        ws[last_year_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(self.last_three_years[0]))
-        ws[two_years_ago_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(self.last_three_years[1]))
-        ws[three_years_ago_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(self.last_three_years[2]))
+        ws[last_year_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(
+            self.last_three_years[0]))
+        ws[two_years_ago_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(
+            self.last_three_years[1]))
+        ws[three_years_ago_dividend_cell_name] = self.analytics.get_dividends_sum_amount_for_year(stock, int(
+            self.last_three_years[2]))
 
-                 
-        self.__center_align_cells(ws, [stock_code_cell_name, price_cell_name, cost_price_cell_name, percentage_change_from_cost_price_cell_name,
-                                        dividend_yield_cell_name, last_year_dividend_cell_name, two_years_ago_dividend_cell_name, three_years_ago_dividend_cell_name, fair_value_uncertainty_cell_name,
-                                        percentage_of_portfolio_cell_name, _52_week_high_cell_name, difference_from_52_week_high_cell_name, _52_week_low_cell_name,
-                                        difference_from_52_week_low_cell_name, fair_value_cell_name, difference_from_from_fair_value_cell_name, price_earnings_ratio_cell_name])
+        self.__center_align_cells(ws, [stock_code_cell_name, price_cell_name, cost_price_cell_name,
+                                       percentage_change_from_cost_price_cell_name,
+                                       dividend_yield_cell_name, last_year_dividend_cell_name,
+                                       two_years_ago_dividend_cell_name, three_years_ago_dividend_cell_name,
+                                       fair_value_uncertainty_cell_name,
+                                       percentage_of_portfolio_cell_name, _52_week_high_cell_name,
+                                       difference_from_52_week_high_cell_name, _52_week_low_cell_name,
+                                       difference_from_52_week_low_cell_name, fair_value_cell_name,
+                                       difference_from_from_fair_value_cell_name, price_earnings_ratio_cell_name])
 
         self.__center_align_cells(ws, [sector_cell_name, stock_name_cell_name],
                                   wrap_text=True)
 
+        self.__set_cell_number_format(ws, [price_cell_name, cost_price_cell_name, price_earnings_ratio_cell_name,
+                                           _52_week_high_cell_name, _52_week_low_cell_name,
+                                           fair_value_cell_name, last_year_dividend_cell_name,
+                                           two_years_ago_dividend_cell_name, three_years_ago_dividend_cell_name],
+                                      '0.00')
 
-        self.__set_cell_number_format(ws, [price_cell_name, cost_price_cell_name, price_earnings_ratio_cell_name, _52_week_high_cell_name, _52_week_low_cell_name,
-                                           fair_value_cell_name, last_year_dividend_cell_name, two_years_ago_dividend_cell_name, three_years_ago_dividend_cell_name], '0.00')
+        self.__set_cell_number_format(ws, [percentage_of_portfolio_cell_name, dividend_yield_cell_name,
+                                           percentage_change_from_cost_price_cell_name,
+                                           difference_from_from_fair_value_cell_name,
+                                           difference_from_52_week_high_cell_name,
+                                           difference_from_52_week_low_cell_name], '0.00%')
 
+        self.__bold_cells(ws,
+                          [price_cell_name, percentage_change_from_cost_price_cell_name, price_earnings_ratio_cell_name,
+                           dividend_yield_cell_name, _52_week_high_cell_name, _52_week_low_cell_name])
 
-        self.__set_cell_number_format(ws, [percentage_of_portfolio_cell_name, dividend_yield_cell_name, percentage_change_from_cost_price_cell_name,
-                                         difference_from_from_fair_value_cell_name, difference_from_52_week_high_cell_name, difference_from_52_week_low_cell_name], '0.00%')
-
-        self.__bold_cells(ws, [price_cell_name, percentage_change_from_cost_price_cell_name, price_earnings_ratio_cell_name, dividend_yield_cell_name, _52_week_high_cell_name, _52_week_low_cell_name])
-
-        ws.conditional_formatting.add(percentage_change_from_cost_price_cell_name, ColorScaleRule(start_type='num', start_value=0, start_color='c6efce', end_type='num', end_value=0, end_color='ffc7ce'))
-        ws.conditional_formatting.add(difference_from_from_fair_value_cell_name, ColorScaleRule(start_type='num', start_value=0, start_color='c6efce', end_type='num', end_value=0, end_color='ffc7ce'))
-
-
+        ws.conditional_formatting.add(percentage_change_from_cost_price_cell_name,
+                                      ColorScaleRule(start_type='num', start_value=0, start_color='c6efce',
+                                                     end_type='num', end_value=0, end_color='ffc7ce'))
+        ws.conditional_formatting.add(difference_from_from_fair_value_cell_name,
+                                      ColorScaleRule(start_type='num', start_value=0, start_color='c6efce',
+                                                     end_type='num', end_value=0, end_color='ffc7ce'))
 
     def __create_market_tables(self, ws, financial_indicators: FinancialIndicators):
         table_start_row = self.market_table_start_row
@@ -221,15 +252,15 @@ class ExcelManager:
             ws.column_dimensions[col_letter].width = 15
 
         for industry_group in financial_indicators.industry_groups:
-            industry_group_stocks = [stock for stock in financial_indicators.stocks if stock.industry_group == industry_group]
-            
+            industry_group_stocks = [stock for stock in financial_indicators.stocks if
+                                     stock.industry_group == industry_group]
+
             if len(industry_group_stocks) == 0:
                 continue
 
-            self.__create_market_table(ws, industry_group_stocks, financial_indicators.headers, table_start_row, industry_group)
+            self.__create_market_table(ws, industry_group_stocks, financial_indicators.headers, table_start_row,
+                                       industry_group)
             table_start_row += len(industry_group_stocks) + 4
-
-   
 
     def __create_market_table(self, ws, stocks: list[Stock], headers: list[str], start_row: int, industry_group: str):
         ws.row_dimensions[start_row].height = 60
@@ -240,8 +271,10 @@ class ExcelManager:
             ws[cell_name].style = 'Headline 1'
             ws[cell_name].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
-        industry_group_col_first_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.INDUSTRY_GROUP.value, start_row + 1)
-        industry_group_col_last_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.INDUSTRY_GROUP.value, len(stocks) + start_row)
+        industry_group_col_first_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.INDUSTRY_GROUP.value,
+                                                             start_row + 1)
+        industry_group_col_last_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.INDUSTRY_GROUP.value,
+                                                            len(stocks) + start_row)
         ws.merge_cells(f'{industry_group_col_first_cell}:{industry_group_col_last_cell}')
         ws[industry_group_col_first_cell].value = industry_group
         ws[industry_group_col_first_cell].font = Font(size=15, bold=True)
@@ -257,18 +290,23 @@ class ExcelManager:
         table_start_cell = self.__get_cell_name(1, start_row)
         table_end_cell = self.__get_cell_name(len(headers) - 1, len(stocks) + start_row)
         table = Table(displayName=industry_group.replace(" ", ""), ref=f"{table_start_cell}:{table_end_cell}")
-        table.tableStyleInfo = TableStyleInfo(name='TableStyleLight20', showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+        table.tableStyleInfo = TableStyleInfo(name='TableStyleLight20', showFirstColumn=False, showLastColumn=False,
+                                              showRowStripes=True, showColumnStripes=False)
         ws.add_table(table)
 
     def __create_market_table_row(self, ws, stock: Stock, start_row: int):
         stock_name_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.COMPANY.value + 1, start_row)
         stock_price_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.PRICE.value + 1, start_row)
-        stock_issued_shares_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.ISSUED_SHARES.value + 1, start_row)
+        stock_issued_shares_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.ISSUED_SHARES.value + 1,
+                                                        start_row)
         stock_net_income_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.NET_INCOME.value + 1, start_row)
-        stock_shareholders_equity_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.SHAREHOLDERS_EQUITY.value + 1, start_row)
+        stock_shareholders_equity_cell = self.__get_cell_name(
+            FinancialIndicatorsColumnsIndex.SHAREHOLDERS_EQUITY.value + 1, start_row)
         stock_market_cap_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.MARKET_CAP.value + 1, start_row)
-        stock_market_cap_percentage_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.MARKET_CAP_PERCENTAGE.value + 1, start_row)
-        stock_earnings_per_share_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.EARNINGS_PER_SHARE.value + 1, start_row)
+        stock_market_cap_percentage_cell = self.__get_cell_name(
+            FinancialIndicatorsColumnsIndex.MARKET_CAP_PERCENTAGE.value + 1, start_row)
+        stock_earnings_per_share_cell = self.__get_cell_name(
+            FinancialIndicatorsColumnsIndex.EARNINGS_PER_SHARE.value + 1, start_row)
         stock_pe_ratio_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.P_E_RATIO.value + 1, start_row)
         stock_book_value_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.BOOK_VALUE.value + 1, start_row)
         stock_pb_ratio_cell = self.__get_cell_name(FinancialIndicatorsColumnsIndex.P_B_RATIO.value + 1, start_row)
@@ -285,18 +323,21 @@ class ExcelManager:
         ws[stock_book_value_cell] = stock.book_value_per_share if stock.book_value_per_share else ''
         ws[stock_pb_ratio_cell] = stock.benchmark.p_b if stock.benchmark.p_b else ''
 
-        self.__center_align_cells(ws, [stock_price_cell, stock_issued_shares_cell, stock_net_income_cell, stock_shareholders_equity_cell, stock_market_cap_cell,
-                                       stock_market_cap_percentage_cell, stock_earnings_per_share_cell, stock_pe_ratio_cell, stock_book_value_cell, stock_pb_ratio_cell])
+        self.__center_align_cells(ws, [stock_price_cell, stock_issued_shares_cell, stock_net_income_cell,
+                                       stock_shareholders_equity_cell, stock_market_cap_cell,
+                                       stock_market_cap_percentage_cell, stock_earnings_per_share_cell,
+                                       stock_pe_ratio_cell, stock_book_value_cell, stock_pb_ratio_cell])
 
         self.__center_align_cells(ws, [stock_name_cell], wrap_text=True)
 
         self.__bold_cells(ws, [stock_net_income_cell, stock_market_cap_cell, stock_pe_ratio_cell, stock_pb_ratio_cell])
-        
-        self.__set_cell_number_format(ws, [stock_price_cell, stock_issued_shares_cell, stock_net_income_cell, stock_shareholders_equity_cell, stock_market_cap_cell, 
-                                             stock_earnings_per_share_cell, stock_pe_ratio_cell, stock_book_value_cell, stock_pb_ratio_cell], '0.00')
+
+        self.__set_cell_number_format(ws, [stock_price_cell, stock_issued_shares_cell, stock_net_income_cell,
+                                           stock_shareholders_equity_cell, stock_market_cap_cell,
+                                           stock_earnings_per_share_cell, stock_pe_ratio_cell, stock_book_value_cell,
+                                           stock_pb_ratio_cell], '0.00')
 
         self.__set_cell_number_format(ws, [stock_market_cap_percentage_cell], '0.00%')
-
 
     def __get_cell_name_stock_table(self, col_name: str, row_index: int) -> str:
         col_index = self.stocks_table_cols.index(col_name)
@@ -308,7 +349,6 @@ class ExcelManager:
     def __center_align_cells(self, ws, cells: str, wrap_text=False) -> None:
         for cell in cells:
             ws[cell].alignment = Alignment(horizontal='center', vertical='center', wrap_text=wrap_text)
-
 
     def __bold_cells(self, ws, cells: str) -> None:
         for cell in cells:
